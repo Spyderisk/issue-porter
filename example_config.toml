@@ -1,20 +1,25 @@
 # Issue Porter Config File
-# Use this to control the program
+# 
+# This config file controls how issues are ported from a GitLab instance
+# to GitHub. This config file also functions as documentation of how the
+# mapping between these two data models is achieved. If you are not familiar
+# with the TOML format, see https://en.wikipedia.org/wiki/TOML .
 
 # USAGE
-# Please create a copy of this config file called "config.toml",
-# edit it, and then run `python3.12 src/main.py`
+#
+# Create a copy of this config file called "config.toml",
+# edit it, and then run `python3.12 src/main.py`.
 
-# See below config for technical details
+# See the following configuration items for technical details
 
 [gitlab]
 # Gitlab access token.
 access_token = "SECRET"
 
-# Domain to access the gitlab server.
-domain = "gitlab.com"
+# Domain to access the gitlab server. Many people run their own.
+domain = "gitlab.example.com"
 
-# Id of project, can be found next to name on project page.
+# GitLab Project Id, can be found next to name on project page in the web interface.
 project = 278964
 
 # Only issues with this label will be transferred.
