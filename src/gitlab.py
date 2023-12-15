@@ -22,31 +22,36 @@
 # Here we parse issues and comments
 
 from requests import get, Response
-from issue import Issue, Comment, GitlabID, Meta
+from issue import Issue, Comment, Meta, ID, GitlabID, GitlabIID, CommentType
 from typing import Generator, Any, Callable
 from math import ceil
 
 PER_PAGE = 20
 
-def __paginate[T](total: int, refill_bag: Callable[[int], list[T]]) -> Generator[T, Any, None]:
+
+def __paginate[T](c: dict, total: int, refill_bag: Callable[[dict, int], list[T]]) -> Generator[T, Any, None]:
     """Helper for creating a generator over gitlabs pages."""
+    print(total)
     index = 0
     bag: list[T] = []
 
     while index < total:
         if len(bag) == 0:
-            bag = refill_bag(ceil(index / PER_PAGE) + 1)
+            bag = refill_bag(c, ceil(index / PER_PAGE) + 1)
+            if len(bag) == 0:
+                break
         yield bag.pop()
         index += 1
 
 
 def gl_get(req: str, ext: str, c: dict) -> Response:
     q = f"https://{c['gitlab']['domain']}/api/v4/{req}?access_token={c['gitlab']['access_token']}&{ext}"
+    # print(q)
     r = get(q)
     return r
 
 
-def get_issues(c: dict, transfer_label: str | None, page: int = 0, per_page: int = PER_PAGE) -> Response:
+def get_issues(c: dict, transfer_label: str | None, page: int = 1, per_page: int = PER_PAGE) -> Response:
     if transfer_label:
         return gl_get(f"projects/{c['gitlab']['project']}/issues",
                       f"labels={transfer_label}&per_page={per_page}&page={page}", c)
@@ -55,7 +60,7 @@ def get_issues(c: dict, transfer_label: str | None, page: int = 0, per_page: int
                       f"per_page={per_page}&page={page}", c)
 
 
-def get_discussion(c: dict, issue_id: GitlabID, page: int = 0, per_page: int = PER_PAGE) -> Response:
+def get_discussion(c: dict, issue_id: GitlabID, page: int = 1, per_page: int = PER_PAGE) -> Response:
     return gl_get(f"projects/{c['gitlab']['project']}/issues/{issue_id}/discussions",
                   f"per_page={per_page}&page={page}", c)
 
@@ -69,7 +74,8 @@ def __parse_issue(r) -> Issue:
     issue.state = r["state"]
     issue.meta = Meta(
         r["created_at"],
-        r["updated_at"]
+        r["updated_at"],
+        ID(r["id"], r["iid"])
     )
 
     return issue
@@ -101,14 +107,23 @@ def issues(c: dict) -> Generator[Issue, Any, None] | list:
         print("No issues to migrate!")
         return []
 
-    def get_bag(page: int) -> list[Issue]:
+    def get_bag(c: dict, page: int) -> list[Issue]:
         print(f"\nFetching gitlab bag {page}")
         issues = get_issues(c, c["gitlab"]["transfer_label"], page)
 
         print(f"Parsing gitlab bag {page}")
-        return __parse_issue_page(c, issues)
+        issues = __parse_issue_page(c, issues)
+
+        for issue in issues:
+            threads = list(issue_comments(
+                c, issue.meta.ids.gitlab_internal))  # type: ignore
+
+            issue.threads = threads
+
+        return issues
 
     return __paginate(
+        c,
         total,
         get_bag
     )
@@ -117,13 +132,14 @@ def issues(c: dict) -> Generator[Issue, Any, None] | list:
 def __parse_comment(r, parent: GitlabID | None) -> Comment:
     comment = Comment()
 
-    comment.id = (r["id"], None)
+    comment.comment_type = CommentType.System if r["system"] else CommentType.User
     comment.body = r["body"]
     comment.attachments = r["attachment"]
     comment.parent = parent
     comment.meta = Meta(
         r["created_at"],
-        r["updated_at"]
+        r["updated_at"],
+        ID(r["id"], None)
     )
 
     return comment
@@ -134,43 +150,44 @@ def __parse_thread(r) -> list[Comment]:
     last_id = None
     for note in r["notes"]:
         comment = __parse_comment(note, last_id)
-        last_id = comment.id[0]
+        last_id = comment.meta.ids.gitlab
         thread.append(comment)
     return thread
 
 
-def __parse_discussion_page(r: Response) -> list[Comment]:
-    comments = []
+def __parse_discussion_page(r: Response) -> list[list[Comment]]:
+    threads = []
 
     for thread in r.json():
         thread = __parse_thread(thread)
-        comments += thread
-    return comments
+        threads.append(thread)
+
+    return threads
 
 
-def total_comments(c: dict, issue_id: GitlabID) -> int:
+def total_threads(c: dict, issue_id: GitlabID) -> int:
     return int(
-        get_discussion(c, issue_id, 0, 1)
+        get_discussion(c, issue_id, 1, 1)
         .headers["x-total"]
     )
 
 
-def issue_comments(c: dict, id: GitlabID) -> Generator[Comment, Any, None] | list:
-    total = total_comments(c, id)
+def issue_comments(c: dict, id: GitlabIID) -> Generator[list[Comment], Any, None] | list:
+    total = total_threads(c, id)
 
     if total == 0:
         print("No issues to migrate!")
         return []
 
-    def get_bag(page: int) -> list[Comment]:
+    def get_bag(c, page: int) -> list[list[Comment]]:
         print(f"\nFetching gitlab bag {page}")
         comments = get_discussion(c, id, page)
-
 
         print(f"Parsing gitlab bag {page}")
         return __parse_discussion_page(comments)
 
     return __paginate(
+        c,
         total,
         get_bag
     )

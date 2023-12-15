@@ -21,17 +21,18 @@
 # Entry point
 
 import tomllib
-from gitlab import *
+from issue import Issue
+from gitlab import issues as iter_issues, total_issues
+from github import first_pass
 
 c = tomllib.load(open("config.toml", "rb"))
 
+issues: list[Issue] = []
 max_issues = total_issues(c)
 
-for index, issue in enumerate(issues(c)):
+for index, issue in enumerate(iter_issues(c)):
     print(f"Pulling issue {index + 1}/{max_issues}: {issue.title} ({issue.state})")
+    issues.append(issue)
 print("All issues parsed")
 
-max_comments = total_comments(c, 1312)
-
-for index, comment in enumerate(issue_comments(c, 1312)):
-    print(f"Pulling issue {index + 1}/{max_issues}")
+first_pass(c, issues)

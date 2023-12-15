@@ -6,7 +6,7 @@ Minimum Python Version: 3.12
 To do list:
 
 - ~~Parse GitLab issues + comments~~
-- Strip out closed issues if required
+- ~~Strip out closed issues if required~~
 - Push all data to GitHub including the GitLab-specific metadata with relationships between issues and comments
 - implement attachment handling (GitHub has no API for Issue attachments). Push images to .github-issue-images-from-gitlab or similar, and link from the Issue
 - Implement link mapping (map from GitLab links to GitHub ones)
@@ -31,5 +31,3 @@ to do multiple passes, editing the newly-created GitHub issues to add in
 relationships between Issues and their dependent comments, and file attachments
 we have uploaded via Git, and of course the maps between GitLab issue numbers
 and GitHub issue numbers.
-
-

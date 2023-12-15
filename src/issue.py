@@ -18,36 +18,75 @@
 # <!-- SPDX-FileType: Source code -->
 # <!-- SPDX-FileComment: Original by Jacob Lewis, November 2023 -->
 
+from enum import Enum
+
 # Issue and comment data strucutures
 
 # Type aliases for IDs
 GitlabID = int
+GitlabIID = int
 GithubID = int
-IDs = tuple[GitlabID, GithubID | None]
+
+class ID:
+    gitlab: GitlabID
+    gitlab_internal: GitlabIID | None
+    github: GithubID
+
+    def __init__(self, gitlab: GitlabID, gitlab_internal: GitlabIID | None) -> None:
+        self.gitlab = gitlab
+        self.gitlab_internal = gitlab_internal
+
+    def __str__(self) -> str:
+        return \
+            f"""
+Gitlab ID:  {self.gitlab},
+Gitlan IID: {self.gitlab_internal}
+            """
+
 
 class Meta:
     created_at: str
     updated_at: str | None
+    ids: ID
 
-    def __init__(self, created_at: str, updated_at: str | None) -> None:
+    def __init__(self, created_at: str, updated_at: str | None, ids: ID) -> None:
         self.created_at = created_at
         self.updated_at = updated_at
+        self.ids = ids
+
+    def __str__(self) -> str:
+        return\
+            f"""
+Created at: {self.created_at},
+Updated at: {self.updated_at},
+{self.ids}
+            """
 
 # While it'd make sense for this to be a tree structure,
 # github operates in a linear way so it's easier to hold all comments together and sort by time
+
+class CommentType(Enum):
+    System = 0
+    User = 1
+
 class Comment:
-    id: IDs
     body: str
+    comment_type: CommentType
     attachments: list[str]
-    parent: GitlabID | None # note id of parent comment
+    parent: GitlabID | None  # note id of parent comment
+
     meta: Meta
 
+    def __str__(self) -> str:
+        return f"{self.body}"
+
+
 class Issue:
-    id: IDs
     title: str
     body: str
     labels: list[str]
     state: str
 
+    threads: list[list[Comment]]
+
     meta: Meta
-    comments: list[Comment]
