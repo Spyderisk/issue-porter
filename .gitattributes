@@ -1,0 +1,3 @@
+# Let Git use its discretion on line endings, which is mostly to not convert a file
+# locally if the local default is something else (eg Windows when most repos are Unix).
+* text=auto
