@@ -24,8 +24,18 @@ import tomllib
 from issue import Issue
 from gitlab import issues as iter_issues, total_issues
 from github import first_pass
+import os
 
-c = tomllib.load(open("config.toml", "rb"))
+if os.name == 'nt':
+    print (f"\nError: This program is not intended for use on Windows. This OS is {os.name}.\n")
+    exit(1)
+
+conffile = "config.toml"
+if os.path.isfile(conffile):
+    c = tomllib.load(open(conffile, "rb"))
+else:
+    print (f"\nError: cannot file \"{conffile}\". Try copying from \"example_config.toml\".\n")
+    exit(1)
 
 issues: list[Issue] = []
 max_issues = total_issues(c)
@@ -36,3 +46,4 @@ for index, issue in enumerate(iter_issues(c)):
 print("All issues parsed")
 
 first_pass(c, issues)
+
