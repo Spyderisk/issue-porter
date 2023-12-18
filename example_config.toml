@@ -13,32 +13,36 @@
 # See the following configuration items for technical details
 
 [gitlab]
-# Gitlab access token.
-access_token = "SECRET"
+# Gitlab access token. Be very careful! Generate a token just for using this tool.
+# This is effectively a password, stored here in this config file in plain text.
+# See https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html
+access_token = "Secret GitLab Token"
 
 # Domain to access the gitlab server. Many people run their own.
 domain = "gitlab.example.com"
 
 # GitLab Project Id, can be found next to name on project page in the web interface.
-project = 278964
+project = 123456
 
 # Only issues with this label will be transferred.
 # If empty all issues will be transferred.
-transfer_label = "Transfer"
+transfer_label = "Transfer to GitHub"
 
 # Transfer closed issues?
 transfer_closed = false
 
 
 [github]
-# Github access token.
-access_token = "SECRET"
+# Github access token. Be extra careful! Generate a token just for using this tool.
+# This is effectively a password, stored here in this config file in plain text.
+# See https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+access_token = "Secret GitHub Token"
 
 # Target project to port the issues to.
-project = "gitlabhq/gitlabhq"
+project = "destination/destination"
 
 # Label which will be applied to any issue that gets transferred
-ported_issue_label = ""
+ported_issue_label = "Transferred from GitLab"
 
 # [porter]
 # # Print debug messages
