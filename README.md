@@ -1,6 +1,8 @@
 # Issue-Porter
 
-Minimum Python Version: 3.12
+Minimum Python Version: 3.12.1
+Gitlab API version: v4
+Github API version: 2022-11-28
 
 **THIS TOOL IS STILL IN EARLY DEVELOPMENT AND CANNOT BE USED**  
 To do list:
@@ -11,6 +13,7 @@ To do list:
 - implement attachment handling (GitHub has no API for Issue attachments). Push images to .github-issue-images-from-gitlab or similar, and link from the Issue
 - Implement link mapping (map from GitLab links to GitHub ones)
 - Implement user mapping (map from GitLab users to GitHub ones)
+- Implement file url mapping
 - Implement system to apply the above mappings in an editing pass of all the new GitHub issues
 
 ## About
