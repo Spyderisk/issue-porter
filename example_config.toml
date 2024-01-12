@@ -38,21 +38,17 @@ transfer_closed = false
 # See https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
 access_token = "Secret GitHub Token"
 
-# Target project to port the issues to.
-project = "destination/destination"
+# Target user and project to port the issues to.
+project = "user/destination"
 
 # Label which will be applied to any issue that gets transferred
 ported_issue_label = "Transferred from GitLab"
-
-# [porter]
-# # Print debug messages
-# debug = true
 
 # TECHNICAL DETAILS
 
 # The way the program works is it first runs through gitlab pulling in all the issues.
 # It skips issues if they don't have the [gitlab.label] label.
 # These then get mapped straight over to github, where we import them, only appending a link to the old issue.
-# We then do a second pass, editing each issue to update links and strip the link back.
+# We then do a second pass, editing each issue to update links and strip the link back. Unknown gitlab links are replaced with "[INTERNAL LINK REMOVED]"
 # You can still access the old issue because github keeps track of issues history.
 # All additional issues are ported straight over 1:1
