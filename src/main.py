@@ -22,13 +22,13 @@
 
 import tomllib
 from issue import Issue
-from gitlab import issues as iter_issues, total_issues
-from github import first_pass
+from gitlab import issues as iter_issues, total_issues, get_repo_name
+from github import first_pass, second_pass
 import os
 
 if os.name == 'nt':
     print (f"\nError: This program is not intended for use on Windows. This OS is {os.name}.\n")
-    exit(1)
+    # exit(1)
 
 conffile = "config.toml"
 if os.path.isfile(conffile):
@@ -36,6 +36,8 @@ if os.path.isfile(conffile):
 else:
     print (f"\nError: cannot file \"{conffile}\". Try copying from \"example_config.toml\".\n")
     exit(1)
+
+c["repo_path"] = get_repo_name(c)
 
 issues: list[Issue] = []
 max_issues = total_issues(c)
@@ -46,4 +48,6 @@ for index, issue in enumerate(iter_issues(c)):
 print("All issues parsed")
 
 first_pass(c, issues)
+second_pass(c, issues)
+
 

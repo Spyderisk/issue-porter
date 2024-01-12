@@ -64,6 +64,9 @@ def get_discussion(c: dict, issue_id: GitlabID, page: int = 1, per_page: int = P
     return gl_get(f"projects/{c['gitlab']['project']}/issues/{issue_id}/discussions",
                   f"per_page={per_page}&page={page}", c)
 
+def get_repo_name(c) -> str:
+    return gl_get(f"projects/{c['gitlab']['project']}", "", c) \
+                .json()["path_with_namespace"]
 
 def __parse_issue(r) -> Issue:
     issue = Issue()

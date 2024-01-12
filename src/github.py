@@ -25,6 +25,7 @@ from issue import Issue, Comment, GithubID
 from requests import post, Response
 import json
 from time import sleep
+from mapping import Mapping, remap_urls
 
 # Github doesn't seem to be able to be self-hosted, so I'll hard code the API route
 API_ROOT = "https://api.github.com"
@@ -33,18 +34,19 @@ def create_comment(c: dict, issue: Issue, com: Comment) -> GithubID:
     q = f"{API_ROOT}/repos/{c["github"]["project"]}/issues/{issue.meta.ids.github}/comments"
     data = {"body": com.body}
 
-    r = post(q, data=json.dumps(data), headers={"Authorization": f"Bearer {c["github"]["access_token"]}"})
+    r = post(q, data=json.dumps(data), headers={"Authorization": f"Bearer {c["github"]["access_token"]}", "X-GitHub-Api-Version": "2022-11-28"})
     sleep(0.5) # Rate limit
     return r.json()["id"]
 
-def create_thread(c: dict, issue: Issue, thread: list[Comment]):
-    for comment in thread:
-        create_comment(c, issue, comment)
-
 def create_issue(c: dict, issue: Issue) -> GithubID:
+    labels = []
+    if c["github"]["ported_issue_label"]:
+        labels = [c["github"]["ported_issue_label"]]
+    
     data = {
         "title": issue.title,
-        "body": issue.body
+        "body": issue.body,
+        "labels": labels
     }
 
     q = f"{API_ROOT}/repos/{c["github"]["project"]}/issues"
@@ -54,9 +56,36 @@ def create_issue(c: dict, issue: Issue) -> GithubID:
         headers={"Authorization": f"Bearer {c["github"]["access_token"]}"}
     )
 
-    sleep(0.5)
+    sleep(0.5) # Rate limit
 
     return r.json()["number"]
+
+def edit_comment(c: dict, issue: Issue, com: Comment):
+    q = f"{API_ROOT}/repos/{c["github"]["project"]}/issues/comments/{com.meta.ids.github}"
+    data = {"body": com.body}
+
+    r = post(q, data=json.dumps(data), headers={"Authorization": f"Bearer {c["github"]["access_token"]}", "X-GitHub-Api-Version": "2022-11-28"})
+    sleep(0.5) # Rate limit
+
+def edit_issue(c: dict, issue: Issue):
+    labels = []
+    if c["github"]["ported_issue_label"]:
+        labels = [c["github"]["ported_issue_label"]]
+    
+    data = {
+        "title": issue.title,
+        "body": issue.body,
+        "labels": labels
+    }
+
+    q = f"{API_ROOT}/repos/{c["github"]["project"]}/issues/{issue.meta.ids.github}"
+    r: Response = post(
+        q,
+        data=json.dumps(data),
+        headers={"Authorization": f"Bearer {c["github"]["access_token"]}"}
+    )
+
+    sleep(0.5) # Rate limit
 
 
 def first_pass(c: dict, issues: list[Issue]) -> list[Issue]:
@@ -64,9 +93,21 @@ def first_pass(c: dict, issues: list[Issue]) -> list[Issue]:
         issue.meta.ids.github = create_issue(c, issue)
 
         for thread in issue.threads:
-            create_thread(c, issue, thread)
+            for comment in thread:
+                comment.meta.ids.github = create_comment(c, issue, comment)
 
     return issues
 
-def second_pass(issues: list[Issue]):
-    pass
+def second_pass(c: dict, issues: list[Issue]):
+    mapping = Mapping(c["repo_path"], c["github"]["project"])
+    mapping.collect_ids(issues)
+
+    for issue in issues:
+        issue: Issue = remap_urls(c, issue, mapping) # type: ignore
+        edit_issue(c, issue)
+
+        for thread in issue.threads:
+            for comment in thread:
+                comment: Comment = remap_urls(c, comment, mapping) # type: ignore
+                edit_comment(c, issue, comment)
+                
