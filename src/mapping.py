@@ -21,6 +21,7 @@
 # Strucutre for managing the mapping between gitlab and github links
 
 from issue import GithubID, GitlabID, GitlabIID, Issue, Comment
+from git_storage import PersistentStorage as PS
 
 # Using a bidict so I can map back and forward
 from bidict import bidict
@@ -56,20 +57,28 @@ class Mapping:
     repo: tuple[str, str]
     issues: bidict[GitlabIID, GithubID]
     comments: bidict[GitlabID, GithubID]
+    user: dict[str, str]
 
     def __init__(self, gitlab_target: str, github_target: str) -> None:
         self.repo = (gitlab_target, github_target)
         self.issues = bidict()
         self.comments = bidict()
+        self.user = {}
 
 
     def collect_ids(self, issues: list[Issue]):
         for i in issues:
-            self.issues[i.meta.ids.gitlab_internal] = i.meta.ids.github
+            self.issues[i.meta.ids.gitlab_internal] = i.meta.ids.github # type: ignore
             for thread in i.threads:
                 for c in thread:
                     self.comments[c.meta.ids.gitlab] = c.meta.ids.github
     
+    def init_persistent_mapping(self, c: dict, ps: PS):
+        obj = ps.load_user_mapping()
+
+        for user in obj["user"]:
+            self.user[user["gitlab-username"]] = user["github-username"] # type: ignore
+
 
 class URLType(Enum):
     Misc = 0
@@ -96,7 +105,7 @@ class URL:
         print(self.url)
 
         if self.url[0] == c["gitlab"]["domain"]: # If gitlab
-            path: list[str] = c["repo_path"].split("/")
+            path: list[str] = c["gitlab"]["repo_path"].split("/")
 
             if self.url[1:1 + len(path)] == path: # If target repo
                 if self.url[-3:-1] == ["-", "issues"]:
@@ -106,7 +115,7 @@ class URL:
                             GitlabID(self.url[-1].split("#")[0]),
                             GitlabID(self.url[-1].split("_")[-1])
                         ) # Get note + issue ID
-                    else:
+                    else: 
                         self.kind = URLType.Issue
                         self.extra = GitlabID(self.url[-1]) # Get issue ID
                 else:
@@ -129,17 +138,17 @@ class URL:
                 return f"https://github.com/{c["github"]["project"]}/"
             
             case URLType.Issue:
-                issue_id = m.issues[self.extra]
+                issue_id = m.issues[self.extra] # type: ignore
                 return f"https://github.com/{c["github"]["project"]}/issues/{issue_id}"
             
             case URLType.Comment:
-                issue_id = m.issues[self.extra[0]]
-                comment_id = m.comments[self.extra[1]]
+                issue_id = m.issues[self.extra[0]] # type: ignore
+                comment_id = m.comments[self.extra[1]] # type: ignore
                 return f"https://github.com/{c["github"]["project"]}/issues/{issue_id}#issuecomment-{comment_id}"
 
 
-def remap_urls(c: dict, obj: Issue | Comment, mapping: Mapping) -> Issue | Comment:
-    p = re.compile('(https?://[^\\s]+)')
+def remap_urls[T: Issue | Comment](c: dict, obj: T, mapping: Mapping) -> T:
+    p = re.compile("(https?://[^\\s]+)")
     matches: list[tuple[re.Match, str]] = []
 
     body = obj.body
@@ -158,3 +167,25 @@ def remap_urls(c: dict, obj: Issue | Comment, mapping: Mapping) -> Issue | Comme
     obj.body = body
 
     return obj
+
+def remap_users[T: Issue | Comment](c: dict, obj: T, mapping: Mapping) -> T:
+    p = re.compile(r"@[\w._]+") # @.+?(?= )
+    matches: list[tuple[str, str]] = []
+
+    body = obj.body
+
+    for match in p.finditer(body):
+        print(match)
+        if match.group() in mapping.user:
+            matches.append((match.group(), mapping.user[match.group()]))
+
+    for old, new in matches:
+        print(f"{old} => {new}")
+        body = body.replace(old, new, 1)
+
+    obj.body = body
+
+    return obj
+
+def remap[T: Issue | Comment](c: dict, obj: T, mapping: Mapping) -> T:
+    return remap_users(c, remap_urls(c, obj, mapping), mapping)

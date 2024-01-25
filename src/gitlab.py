@@ -31,7 +31,6 @@ PER_PAGE = 20
 
 def __paginate[T](c: dict, total: int, refill_bag: Callable[[dict, int], list[T]]) -> Generator[T, Any, None]:
     """Helper for creating a generator over gitlabs pages."""
-    print(total)
     index = 0
     bag: list[T] = []
 
@@ -46,7 +45,6 @@ def __paginate[T](c: dict, total: int, refill_bag: Callable[[dict, int], list[T]
 
 def gl_get(req: str, ext: str, c: dict) -> Response:
     q = f"https://{c['gitlab']['domain']}/api/v4/{req}?access_token={c['gitlab']['access_token']}&{ext}"
-    # print(q)
     r = get(q)
     return r
 

@@ -44,6 +44,9 @@ project = "user/destination"
 # Label which will be applied to any issue that gets transferred
 ported_issue_label = "Transferred from GitLab"
 
+# Repository to store additional data in
+storage_repo = "user/destination"
+
 # TECHNICAL DETAILS
 
 # The way the program works is it first runs through gitlab pulling in all the issues.

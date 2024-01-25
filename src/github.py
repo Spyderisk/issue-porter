@@ -25,24 +25,27 @@ from issue import Issue, Comment, GithubID
 from requests import post, Response
 import json
 from time import sleep
-from mapping import Mapping, remap_urls
+from mapping import Mapping, remap
+from git_storage import PersistentStorage as PS
 
 # Github doesn't seem to be able to be self-hosted, so I'll hard code the API route
 API_ROOT = "https://api.github.com"
+
 
 def create_comment(c: dict, issue: Issue, com: Comment) -> GithubID:
     q = f"{API_ROOT}/repos/{c["github"]["project"]}/issues/{issue.meta.ids.github}/comments"
     data = {"body": com.body}
 
     r = post(q, data=json.dumps(data), headers={"Authorization": f"Bearer {c["github"]["access_token"]}", "X-GitHub-Api-Version": "2022-11-28"})
-    sleep(0.5) # Rate limit
+    sleep(0.5)  # Rate limit
     return r.json()["id"]
+
 
 def create_issue(c: dict, issue: Issue) -> GithubID:
     labels = []
     if c["github"]["ported_issue_label"]:
         labels = [c["github"]["ported_issue_label"]]
-    
+
     data = {
         "title": issue.title,
         "body": issue.body,
@@ -53,25 +56,30 @@ def create_issue(c: dict, issue: Issue) -> GithubID:
     r: Response = post(
         q,
         data=json.dumps(data),
-        headers={"Authorization": f"Bearer {c["github"]["access_token"]}"}
+        headers={
+            "Authorization": f"Bearer {c["github"]["access_token"]}",
+            "X-GitHub-Api-Version": "2022-11-28"
+        }
     )
 
-    sleep(0.5) # Rate limit
+    sleep(0.5)  # Rate limit
 
     return r.json()["number"]
+
 
 def edit_comment(c: dict, issue: Issue, com: Comment):
     q = f"{API_ROOT}/repos/{c["github"]["project"]}/issues/comments/{com.meta.ids.github}"
     data = {"body": com.body}
 
     r = post(q, data=json.dumps(data), headers={"Authorization": f"Bearer {c["github"]["access_token"]}", "X-GitHub-Api-Version": "2022-11-28"})
-    sleep(0.5) # Rate limit
+    sleep(0.5)  # Rate limit
+
 
 def edit_issue(c: dict, issue: Issue):
     labels = []
     if c["github"]["ported_issue_label"]:
         labels = [c["github"]["ported_issue_label"]]
-    
+
     data = {
         "title": issue.title,
         "body": issue.body,
@@ -85,7 +93,7 @@ def edit_issue(c: dict, issue: Issue):
         headers={"Authorization": f"Bearer {c["github"]["access_token"]}"}
     )
 
-    sleep(0.5) # Rate limit
+    sleep(0.5)  # Rate limit
 
 
 def first_pass(c: dict, issues: list[Issue]) -> list[Issue]:
@@ -98,16 +106,17 @@ def first_pass(c: dict, issues: list[Issue]) -> list[Issue]:
 
     return issues
 
-def second_pass(c: dict, issues: list[Issue]):
-    mapping = Mapping(c["repo_path"], c["github"]["project"])
+
+def second_pass(c: dict, issues: list[Issue], ps: PS):
+    mapping = Mapping(c["gitlab"]["repo_path"], c["github"]["project"])
     mapping.collect_ids(issues)
+    mapping.init_persistent_mapping(c, ps)
 
     for issue in issues:
-        issue: Issue = remap_urls(c, issue, mapping) # type: ignore
+        issue: Issue = remap(c, issue, mapping)
         edit_issue(c, issue)
 
         for thread in issue.threads:
             for comment in thread:
-                comment: Comment = remap_urls(c, comment, mapping) # type: ignore
+                comment: Comment = remap(c, comment, mapping)
                 edit_comment(c, issue, comment)
-                
