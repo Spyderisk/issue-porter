@@ -76,6 +76,8 @@ class Mapping:
     def init_persistent_mapping(self, c: dict, ps: PS):
         obj = ps.load_user_mapping()
 
+        c["user-mapping"] = obj["user-mapping"] # Add additional settings
+
         for user in obj["user"]:
             self.user[user["gitlab-username"]] = user["github-username"] # type: ignore
 
@@ -178,6 +180,8 @@ def remap_users[T: Issue | Comment](c: dict, obj: T, mapping: Mapping) -> T:
         print(match)
         if match.group() in mapping.user:
             matches.append((match.group(), mapping.user[match.group()]))
+        elif c["user-mapping"]["missing-user-behavior"] == "remove":
+            matches.append((match.group(), c["user-mapping"]["missing-user-message"]))
 
     for old, new in matches:
         print(f"{old} => {new}")

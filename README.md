@@ -4,7 +4,6 @@ Minimum Python Version: 3.12.1
 Gitlab API version: v4
 Github API version: 2022-11-28
 
-
 **THIS TOOL IS STILL IN EARLY DEVELOPMENT AND NOT ALL FEATURES ARE FINISHED, USE AT YOUR OWN RISK**  
 To do list:
 
@@ -37,28 +36,43 @@ we have uploaded via Git, and of course the maps between GitLab issue numbers
 and GitHub issue numbers.
 
 ## Setup
-```
+
+```bash
 git clone https://github.com/Spyderisk/issue-porter.git
 cd issue-porter
 ```
 
-#### Setup a virtual environment (optional but recommended)
-```
+### Setup a virtual environment (optional but recommended)
+
+```bash
 python3.12 -m venv .venv
 source .venv/bin/activate
 ```
-#### Install dependencies
-```
+
+### Install dependencies
+
+```bash
 python3.12 -m pip install -r requirements.txt
 ```
 
 ## Usage
-```
+
+```bash
 cp example_config.toml config.toml
 ```
+
 Edit config.toml with your favourite text editor / IDE / magnet + needle.
 
-This contains all the configuration the program requires
+To generate the persistent config, run:
+
+```bash
+python3.12 src/main.py --gen-mapping
 ```
+
+This will clone `github.storage_repo` and place it into `storage_repo/` where you can edit `storage_repo/.issue-porter/user_mapping.toml`
+
+To finally port the issues, run:
+
+```bash
 python3.12 src/main.py
 ```

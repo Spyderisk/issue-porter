@@ -56,6 +56,6 @@ else:
     print("All issues parsed")
 
     first_pass(c, issues)
-    # second_pass(c, issues, ps)
+    second_pass(c, issues, ps)
 
 
