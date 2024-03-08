@@ -88,4 +88,6 @@ def load_repo(c: dict) -> PersistentStorage:
         repo = Repo.clone_from(
             f"https://github.com/{c["github"]["storage_repo"]}.git", "storage_repo")
 
+    repo.git.checkout(c["github"]["branch"])
+
     return PersistentStorage.load_or_create_config(repo)

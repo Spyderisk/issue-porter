@@ -41,6 +41,9 @@ access_token = "Secret GitHub Token"
 # Target user and project to port the issues to.
 project = "user/destination"
 
+# Branch where files will be pushed to
+branch = "main"
+
 # Label which will be applied to any issue that gets transferred
 ported_issue_label = "Transferred from GitLab"
 

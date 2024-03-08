@@ -22,6 +22,9 @@
 
 from issue import GithubID, GitlabID, GitlabIID, Issue, Comment
 from git_storage import PersistentStorage as PS
+from gitlab import download_file
+
+from multiprocessing import Process
 
 # Using a bidict so I can map back and forward
 from bidict import bidict
@@ -148,6 +151,40 @@ class URL:
                 comment_id = m.comments[self.extra[1]] # type: ignore
                 return f"https://github.com/{c["github"]["project"]}/issues/{issue_id}#issuecomment-{comment_id}"
 
+def remap_attachments[T: Issue | Comment](c: dict, obj: T) -> T:
+    p = re.compile(r"\[(.*?)\]\((\/uploads\/[0-9a-fA-F]+\/[^\/\s]+)\)")
+    matches: list[tuple[re.Match, str]] = []
+
+    sp: list[Process] = []
+
+    body = obj.body
+
+    for match in p.finditer(body):
+        p = Process(target=download_file, args=(c, match.group(2)))
+        p.start()
+        sp.append(p)
+
+        embed = ""
+
+        if body[match.start(0)] == '!':
+            embed = "!"
+
+        matches.append((
+            match,
+            f"{embed}[{match.group(1)}](https://raw.githubusercontent.com/{c["github"]["project"]}/{c["github"]["branch"]}/.issue-porter/{c["gitlab"]["project"]}{match.group(2)})"
+        ))
+
+    for old, new in matches:
+        print(f"{old.group()} => {new}")
+        body = body.replace(old.group(), new, 1)
+
+    obj.body = body
+
+    # Wait until all subprocesses are finished
+    for process in sp:
+        process.join()
+
+    return obj
 
 def remap_urls[T: Issue | Comment](c: dict, obj: T, mapping: Mapping) -> T:
     p = re.compile("(https?://[^\\s]+)")
@@ -192,4 +229,7 @@ def remap_users[T: Issue | Comment](c: dict, obj: T, mapping: Mapping) -> T:
     return obj
 
 def remap[T: Issue | Comment](c: dict, obj: T, mapping: Mapping) -> T:
-    return remap_users(c, remap_urls(c, obj, mapping), mapping)
+    return remap_attachments(c,
+        remap_users(c,
+            remap_urls(c, obj, mapping), mapping)
+            )

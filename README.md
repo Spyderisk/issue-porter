@@ -10,7 +10,7 @@ To do list:
 - ~~Parse GitLab issues + comments~~
 - ~~Strip out closed issues if required~~
 - Push all data to GitHub including the GitLab-specific metadata with ~~relationships between issues and comments~~ (TODO: fully test mapping)
-- implement attachment handling (GitHub has no API for Issue attachments). Push images to .github-issue-images-from-gitlab or similar, and link from the Issue
+- ~~implement attachment handling (GitHub has no API for Issue attachments). Push images to .github-issue-images-from-gitlab or similar, and link from the Issue~~
 - ~~Implement link mapping (map from GitLab links to GitHub ones)~~
 - ~~Implement user mapping (map from GitLab users to GitHub ones)~~
 - Implement file url mapping

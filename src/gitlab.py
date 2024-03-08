@@ -25,6 +25,8 @@ from requests import get, Response
 from issue import Issue, Comment, Meta, ID, GitlabID, GitlabIID, CommentType
 from typing import Generator, Any, Callable
 from math import ceil
+from requests import get
+from pathlib import Path
 
 PER_PAGE = 20
 
@@ -192,3 +194,17 @@ def issue_comments(c: dict, id: GitlabIID) -> Generator[list[Comment], Any, None
         total,
         get_bag
     )
+
+def download_file(c: dict, path: str):
+    _path = Path(f"storage_repo/.issue-porter/{c["gitlab"]["project"]}/{path}")
+    _path.parent.mkdir(parents=True, exist_ok=True)
+
+    cookies = {
+        "_gitlab_session": c["gitlab"]["session_cookie"]
+    }
+
+    res = get(f"https://{c['gitlab']['domain']}/{c["gitlab"]["repo_path"]}{path}", cookies=cookies)
+
+    file = open(_path, "wb")
+
+    file.write(res.content)
