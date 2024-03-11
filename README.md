@@ -35,6 +35,14 @@ course the maps between GitLab issue numbers and GitHub issue numbers.
 - Implement file url mapping. This means XXXX
 - Implement a second editing pass of all the new GitHub issues, updating for file and user mapping when we have that information XXXX
 
+## Demo
+
+Once you have completed the Setup section below, the minimum demonstration of Issue Porter is:
+
+* set up a GitHub repo XXXX
+* XXXX
+* XXXX
+
 ## Setup
 
 ```bash
