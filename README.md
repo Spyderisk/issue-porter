@@ -9,28 +9,31 @@ Github API version: 2022-11-28
 This is a tool to port issues from GitLab to GitHub. There are several such
 tools around, but as of March 2024 this appears to be the most complete and
 effective. There are outstanding items to fix (see TODO section below) but this
-is a very good start.
+is a very good start. We would love to have your corrections and improvements.
 
 More of the technical documentation is in the configuration file, see
 `example_config.toml` for details.
 
 ## Brief overview
 
-The data models differ in important ways, e.g. GitLab has threaded comments but
-GitHub does not. Another difficulty is that GitHub does not expose an API to
-upload attachments such as screenshots. The GitHub API does not allow us to
-specify what the new GitHub Issue number will be. Many of these problems and more
-have been solved using the GitHub feature that Issues have versions. This allows us
-to do multiple passes, editing the newly-created GitHub issues to add in
-relationships between Issues and their dependent comments, and file attachments
-we have uploaded via Git, and of course the maps between GitLab issue numbers
-and GitHub issue numbers.
+The data models differ in important ways, including:
 
-## What needs to be completed
+* GitLab has threaded comments but GitHub does not. 
+* GitHub does not expose an API to upload attachments such as screenshots.
+* The GitHub API does not allow us to specify what the new GitHub Issue number will be.
+* XXXX
+
+Many of these problems and more have been solved using the GitHub feature that
+Issues have versions. This allows us to do multiple passes, editing the
+newly-created GitHub issues to add in relationships between Issues and their
+dependent comments, and file attachments we have uploaded via Git, and of
+course the maps between GitLab issue numbers and GitHub issue numbers.
+
+## TODO
 
 - Push all data to GitHub including the GitLab-specific metadata with (TODO: fully test mapping)
-- Implement file url mapping
-- Implement system to apply the above mappings in an editing pass of all the new GitHub issues
+- Implement file url mapping. This means XXXX
+- Implement a second editing pass of all the new GitHub issues, updating for file and user mapping when we have that information XXXX
 
 ## Setup
 
