@@ -4,21 +4,12 @@ Minimum Python Version: 3.12.1
 Gitlab API version: v4
 Github API version: 2022-11-28
 
-**THIS TOOL IS STILL IN EARLY DEVELOPMENT AND NOT ALL FEATURES ARE FINISHED, USE AT YOUR OWN RISK**  
-To do list:
-
-- ~~Parse GitLab issues + comments~~
-- ~~Strip out closed issues if required~~
-- Push all data to GitHub including the GitLab-specific metadata with ~~relationships between issues and comments~~ (TODO: fully test mapping)
-- ~~implement attachment handling (GitHub has no API for Issue attachments). Push images to .github-issue-images-from-gitlab or similar, and link from the Issue~~
-- ~~Implement link mapping (map from GitLab links to GitHub ones)~~
-- ~~Implement user mapping (map from GitLab users to GitHub ones)~~
-- Implement file url mapping
-- Implement system to apply the above mappings in an editing pass of all the new GitHub issues
-
 ## About
 
-This is a tool to port issues from GitLab to GitHub.
+This is a tool to port issues from GitLab to GitHub. There are several such
+tools around, but as of March 2024 this appears to be the most complete and
+effective. There are outstanding items to fix (see TODO section below) but this
+is a very good start.
 
 More of the technical documentation is in the configuration file, see
 `example_config.toml` for details.
@@ -34,6 +25,12 @@ to do multiple passes, editing the newly-created GitHub issues to add in
 relationships between Issues and their dependent comments, and file attachments
 we have uploaded via Git, and of course the maps between GitLab issue numbers
 and GitHub issue numbers.
+
+## What needs to be completed
+
+- Push all data to GitHub including the GitLab-specific metadata with (TODO: fully test mapping)
+- Implement file url mapping
+- Implement system to apply the above mappings in an editing pass of all the new GitHub issues
 
 ## Setup
 
