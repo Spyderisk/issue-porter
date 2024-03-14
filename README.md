@@ -1,15 +1,13 @@
 # Issue-Porter
 
-Minimum Python Version: 3.12.1
-Gitlab API version: v4
-Github API version: 2022-11-28
+* Minimum Python Version: 3.12.1
+* GitLab API version: v4
+* GitHub API version: 2022-11-28
 
 ## About
 
-This is a tool to port issues from GitLab to GitHub. There are several such
-tools around, but as of March 2024 this appears to be the most complete and
-effective. There are outstanding items to fix (see TODO section below) but this
-is a very good start. We would love to have your corrections and improvements.
+This is a tool to port issues from GitLab to GitHub. There are several such tools around, but as of March 2024 Issue Porter appears to be the most complete and
+effective. There are outstanding items to fix (see TODO section below) but this is a very good start. We would love to have your corrections and improvements.
 
 More of the technical documentation is in the configuration file, see
 `example_config.toml` for details.
