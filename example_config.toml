@@ -18,6 +18,12 @@
 # See https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html
 access_token = "Secret GitLab Token"
 
+# Browser session token
+# Use the inspect tool in a browser, open the network tab,
+# head to gitlab and inspect the cookies for a request to Gitlab,
+# you'll find a session token there. As with the access token, DO NOT SHARE IT
+session_cookie = "Secret Browser session token"
+
 # Domain to access the gitlab server. Many people run their own.
 domain = "gitlab.example.com"
 

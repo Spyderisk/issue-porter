@@ -19,9 +19,9 @@ More of the technical documentation is in the configuration file, see
 The data models differ in important ways, including:
 
 * GitLab has threaded comments but GitHub does not. 
-* GitHub does not expose an API to upload attachments such as screenshots.
+* Gitlab does not have a an API to download attachments such as screenshots, and GitHub does not expose an API to upload attachments.
 * The GitHub API does not allow us to specify what the new GitHub Issue number will be.
-* XXXX
+* Internal links across the two platforms will be different, for example links to other issues.
 
 Many of these problems and more have been solved using the GitHub feature that
 Issues have versions. This allows us to do multiple passes, editing the
@@ -31,17 +31,20 @@ course the maps between GitLab issue numbers and GitHub issue numbers.
 
 ## TODO
 
-- Push all data to GitHub including the GitLab-specific metadata with (TODO: fully test mapping)
-- Implement file url mapping. This means XXXX
-- Implement a second editing pass of all the new GitHub issues, updating for file and user mapping when we have that information XXXX
+- Push all data to GitHub including the GitLab-specific metadata
+- Implement file url mapping. This means if I link to a README.md file in a certain branch, we remap this link to work in the other platform
+- Fully test the tool/create test repos
+- Implement a system to run a second pass of porting issues. This could be desireable if development happens on Gitlab, but you want to publish to Github. What we want is to be able to save our mapping (Issue IDs, usernames etc) and to be able to use this information later to fully remap this second pass, along with potentially extending the original remap with new information
 
 ## Demo
 
 Once you have completed the Setup section below, the minimum demonstration of Issue Porter is:
 
-* set up a GitHub repo XXXX
-* XXXX
-* XXXX
+Given a Gitlab repo and a Github repo,
+Find the ID of the gitlab repo (Located next to it's name on the repo's root page) and the user/repo_name for github.
+Copy these into the config.toml, also changing other values if it is appropriate to your case.
+Run `python3.12 src/main.py port` in your terminal.
+
 
 ## Setup
 
@@ -74,13 +77,13 @@ Edit config.toml with your favourite text editor / IDE / magnet + needle.
 To generate the persistent config, run:
 
 ```bash
-python3.12 src/main.py --gen-mapping
+python3.12 src/main.py init
 ```
 
-This will clone `github.storage_repo` and place it into `storage_repo/` where you can edit `storage_repo/.issue-porter/user_mapping.toml`
+This will clone `github.storage_repo` from the config and place it into `storage_repo/` where you can edit `storage_repo/.issue-porter/user_mapping.toml`
 
 To finally port the issues, run:
 
 ```bash
-python3.12 src/main.py
+python3.12 src/main.py port
 ```
