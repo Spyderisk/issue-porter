@@ -29,29 +29,13 @@ import os
 import sys
 
 
-if os.name == 'nt':
-    print (f"\nError: This program is not intended for use on Windows. This OS is {os.name}.\n")
-    exit(1)
-
-conffile = "config.toml"
-if os.path.isfile(conffile):
-    c = tomllib.load(open(conffile, "rb"))
-else:
-    print (f"\nError: cannot find \"{conffile}\". Try copying from \"example_config.toml\".\n")
-    exit(1)
-
-c["gitlab"]["repo_path"] = get_repo_name(c)
-ps = load_repo(c)
-
-if len(sys.argv) >= 2 and sys.argv[1] == "--gen-mapping":
-    ps.gen_mapping(c)
-
-else:
+def port():
     issues: list[Issue] = []
     max_issues = total_issues(c)
 
     for index, issue in enumerate(iter_issues(c)):
-        print(f"Pulling issue {index + 1}/{max_issues}: {issue.title} ({issue.state})")
+        print(f"Pulling issue {
+              index + 1}/{max_issues}: {issue.title} ({issue.state})")
         issues.append(issue)
     print("All issues parsed")
 
@@ -59,3 +43,46 @@ else:
     second_pass(c, issues, ps)
 
 
+def help():
+    print(
+        """
+Issue Porter 0.1
+Usage: python3.12 src/main.py COMMAND
+
+Commands:
+    init      Initializes the storage repo and generates required config file templates
+    port      Ports issues according to the contents of config.toml
+
+Please see example_config.toml for documentation about configuring the program
+""")
+    exit()
+
+
+if os.name == 'nt':
+    print(f"\nError: This program is not intended for use on Windows. This OS is {
+          os.name}.\n")
+    exit(1)
+
+conffile = "config.toml"
+if os.path.isfile(conffile):
+    c = tomllib.load(open(conffile, "rb"))
+else:
+    print(f"\nError: cannot find \"{
+          conffile}\". Try copying from \"example_config.toml\".\n")
+    exit(1)
+
+c["gitlab"]["repo_path"] = get_repo_name(c)
+ps = load_repo(c)
+
+if len(sys.argv) <= 1:
+    help()
+
+match sys.argv[1].lower():
+    case "port":
+        port()
+
+    case "init":
+        ps.gen_mapping(c)
+
+    case _:
+        help()

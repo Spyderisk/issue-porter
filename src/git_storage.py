@@ -7,9 +7,11 @@ import tomllib
 ROOT = "storage_repo/.issue-porter"
 VERSION = (0, 1, 0)
 
+
 def fopen(path: str, mode: str) -> IO[Any]:
     os.makedirs(os.path.dirname(path), exist_ok=True)
     return open(path, mode=mode)
+
 
 class PersistentStorage:
     repo: Repo
@@ -48,11 +50,11 @@ class PersistentStorage:
         else:
             print("Generated new persistent data")
             return cls.default()
-        
+
     def gen_mapping(self, c: dict):
         with fopen(f"{ROOT}/user_mapping.toml", "w") as f:
             f.write(
-"""
+                """
 [user-mapping]
 # Behaviour for non-mapped users
 # Options:
@@ -75,7 +77,6 @@ github-username = "@username"
     def load_user_mapping(self) -> dict[str, list[dict[str, str]] | dict[str, str]]:
         with fopen(f"{ROOT}/user_mapping.toml", "r") as f:
             return tomllib.loads(f.read())
-
 
 
 def load_repo(c: dict) -> PersistentStorage:
