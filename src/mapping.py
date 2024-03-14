@@ -107,8 +107,6 @@ class URL:
 
         self.url = split
 
-        print(self.url)
-
         if self.url[0] == c["gitlab"]["domain"]: # If gitlab
             path: list[str] = c["gitlab"]["repo_path"].split("/")
 
@@ -127,7 +125,6 @@ class URL:
                     self.kind = URLType.Repo
             else:
                 self.kind = URLType.UnknownGitlab
-                print(f"Unknown gitlab URL: {url}")
         else:
             self.kind = URLType.Misc
 
@@ -214,7 +211,6 @@ def remap_users[T: Issue | Comment](c: dict, obj: T, mapping: Mapping) -> T:
     body = obj.body
 
     for match in p.finditer(body):
-        print(match)
         if match.group() in mapping.user:
             matches.append((match.group(), mapping.user[match.group()]))
         elif c["user-mapping"]["missing-user-behavior"] == "remove":

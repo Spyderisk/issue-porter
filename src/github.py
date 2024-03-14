@@ -97,12 +97,19 @@ def edit_issue(c: dict, issue: Issue):
 
 
 def first_pass(c: dict, issues: list[Issue]) -> list[Issue]:
-    for issue in issues:
+
+    for i, issue in enumerate(issues):
+        print(f"Creating issue {i + 1}")
         issue.meta.ids.github = create_issue(c, issue)
 
+        t = 0
         for thread in issue.threads:
             for comment in thread:
+                t += 1
+                print(f"Creating comment {t}")
+
                 comment.meta.ids.github = create_comment(c, issue, comment)
+        print("")
 
     return issues
 
@@ -112,11 +119,16 @@ def second_pass(c: dict, issues: list[Issue], ps: PS):
     mapping.collect_ids(issues)
     mapping.init_persistent_mapping(c, ps)
 
-    for issue in issues:
+    for i, issue in enumerate(issues):
+        print(f"Editing issue {i + 1}")
         issue: Issue = remap(c, issue, mapping)
         edit_issue(c, issue)
 
+        t = 0
         for thread in issue.threads:
             for comment in thread:
+                t += 1
+                print(f"Creating comment {t}")
+                
                 comment: Comment = remap(c, comment, mapping)
                 edit_comment(c, issue, comment)

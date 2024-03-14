@@ -80,6 +80,7 @@ if len(sys.argv) <= 1:
 match sys.argv[1].lower():
     case "port":
         port()
+        print("Please commit and push the changes made inside the storage repo.")
 
     case "init":
         ps.gen_mapping(c)
