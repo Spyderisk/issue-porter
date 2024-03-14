@@ -8,7 +8,7 @@ We use the [API](https://docs.gitlab.com/ee/api/rest/) to download the Issue com
 
 ### GitHub destination project
 
-This end is a little more complex. To retain as much information as possible, we first push the unedited comments along with a metadata addendum describing XXXXX (UNIMPLEMENTED YET). We then do a second pass once we have information from processing all of the GitLab issues, and edit the GitHub issues to replace GitLab usernames with their GitHub equivalents, and upload attachments, etc.
+This end is a little more complex. To retain as much information as possible, we first push the unedited comments along with a metadata addendum describing things such as date, author and other information we cannot easily pass over without clogging everything (UNIMPLEMENTED YET). We then do a second pass once we have information from processing all of the GitLab issues, and edit the GitHub issues to replace GitLab usernames with their GitHub equivalents, and upload attachments, etc. Doing it like this is nice because Github shows a sort of diff between the original and edit, which lets the original comment be preserved without clogging the new comment.
 
 ### Mappings
 
@@ -22,7 +22,7 @@ It may be desired to be able to continuously port over issues, so development ma
 
 The user must write the mapfile manually. We store the configs for this inside `storage_repo/.issue-porter/user_mapping.toml` The program will generate an example mapfile if you run it with `--gen-mapping`.
 
-When issues are brought across from GitLab, the mapping will connect eg user sally93821 with SallyJones, and on GitHub SallyJones will be notified that she has been mentioned in these issues as if they were new issues (which of course they are, from GitHub's point of view.) This can potentially invoke a blizzard of notifications if there are thousands of issues XXXXX.
+When issues are brought across from GitLab, the mapping will connect eg user sally93821 with SallyJones, and on GitHub SallyJones will be notified that she has been mentioned in these issues as if they were new issues (which of course they are, from GitHub's point of view.) This can potentially invoke a blizzard of notifications if there are thousands of issues. Some users may not have Github accounts, so for missing users we have an option of either redacting their names, or leaving them as is, however this ping people unintentionally so beware.
 
 #### Attachment mapping
 
@@ -35,7 +35,7 @@ Attachments in GitLab look like this:
 To download this we use a browser session token, and use the full url `https://{HOST}/{USER}/{REPO}/{RELATIVE URL}`. An example full `curl` invocation is:
 
 ```
-XXXX
+curl --cookie "_gitlab_session={SESSION TOKEN}" https://{HOST}/{USER}/{REPO}/{RELATIVE URL}
 ```
 
-The file downloaded by `curl` gets placed inside `storage_repo/.issue-porter/{REPO_ID}/{RELATIVE URL}` which can then be committed to GitHub. An entry is added to the issue with a link to this file.
+The downloaded file should be placed inside `storage_repo/.issue-porter/{REPO_ID}/{RELATIVE URL}` which can then be committed to GitHub. An entry is added to the issue with a link to this file.
